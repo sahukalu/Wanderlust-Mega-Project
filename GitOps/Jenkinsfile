@@ -19,7 +19,7 @@ pipeline {
         stage('Git: Code Checkout') {
             steps {
                 script{
-                    code_checkout("https://https://github.com/sahukalu/Wanderlust-Mega-Project.git","main")
+                    code_checkout("https://github.com/sahukalu/Wanderlust-Mega-Project.git","main")
                 }
             }
         }
