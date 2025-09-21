@@ -7,8 +7,8 @@ pipeline {
     }
     
     parameters {
-        string(name: 'FRONTEND_DOCKER_TAG', defaultValue: '', description: 'Setting docker image for latest push')
-        string(name: 'BACKEND_DOCKER_TAG', defaultValue: '', description: 'Setting docker image for latest push')
+        string(name: 'FRONTEND_DOCKER_TAG', defaultValue: 'latest-frontend', description: 'Docker tag for frontend image')
+        string(name: 'BACKEND_DOCKER_TAG', defaultValue: 'latest-backend', description: 'Docker tag for backend image')
     }
     
     stages {
@@ -16,11 +16,20 @@ pipeline {
             steps {
                 script {
                     if (params.FRONTEND_DOCKER_TAG == '' || params.BACKEND_DOCKER_TAG == '') {
-                        error("FRONTEND_DOCKER_TAG and BACKEND_DOCKER_TAG must be provided.")
+                        echo "⚠️ Warning: Docker tags not provided, using defaults."
+                        if (params.FRONTEND_DOCKER_TAG == '') {
+                            params.FRONTEND_DOCKER_TAG = "latest-frontend"
+                        }
+                        if (params.BACKEND_DOCKER_TAG == '') {
+                            params.BACKEND_DOCKER_TAG = "latest-backend"
+                        }
                     }
+                    echo "FRONTEND_DOCKER_TAG: ${params.FRONTEND_DOCKER_TAG}"
+                    echo "BACKEND_DOCKER_TAG: ${params.BACKEND_DOCKER_TAG}"
                 }
             }
         }
+        
         stage("Workspace cleanup"){
             steps{
                 script{
@@ -96,13 +105,13 @@ pipeline {
         stage("Docker: Build Images"){
             steps{
                 script{
-                        dir('backend'){
-                            docker_build("wanderlust-backend-beta","${params.BACKEND_DOCKER_TAG}","kalusahu902")
-                        }
+                    dir('backend'){
+                        docker_build("wanderlust-backend-beta","${params.BACKEND_DOCKER_TAG}","kalusahu902")
+                    }
                     
-                        dir('frontend'){
-                            docker_build("wanderlust-frontend-beta","${params.FRONTEND_DOCKER_TAG}","kalusahu902")
-                        }
+                    dir('frontend'){
+                        docker_build("wanderlust-frontend-beta","${params.FRONTEND_DOCKER_TAG}","kalusahu902")
+                    }
                 }
             }
         }
@@ -116,6 +125,7 @@ pipeline {
             }
         }
     }
+    
     post{
         success{
             archiveArtifacts artifacts: '*.xml', followSymlinks: false
